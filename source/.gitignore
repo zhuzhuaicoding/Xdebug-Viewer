@@ -1,0 +1,7 @@
+__history/*
+library/__history/*
+application/__history/*
+!.gitignore
+*.dcu
+xdebugviewer.identcache
+xdebugviewer.bdsproj.local
