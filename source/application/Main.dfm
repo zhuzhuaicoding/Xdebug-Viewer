@@ -134,6 +134,7 @@ object Form1: TForm1
     end
   end
   object PopupMenu1: TPopupMenu
+    OnPopup = PopupMenu1Popup
     Left = 72
     Top = 120
     object Openfile1: TMenuItem

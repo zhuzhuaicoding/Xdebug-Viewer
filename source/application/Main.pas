@@ -40,8 +40,10 @@ type
       var NodeDataSize: Integer);
     procedure CloseFileActionExecute(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure PopupMenu1Popup(Sender: TObject);
   private
     XDebugFile: XFile;
+    Processing: boolean;
 
     procedure UpdateProgress(Sender: TObject; const Position: Cardinal; const Total: Cardinal);
     procedure UpdateStatus(Status: string);
@@ -100,6 +102,8 @@ begin
   ProgressBarStyle := GetWindowLong(ProgressBar.Handle, GWL_EXSTYLE);
   ProgressBarStyle := ProgressBarStyle - WS_EX_STATICEDGE;
   SetWindowLong(ProgressBar.Handle, GWL_EXSTYLE, ProgressBarStyle);
+
+  Processing := false;
 end;
 
 procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
@@ -120,25 +124,37 @@ begin
       XDebugFile.Free;
     end;
 
-    UpdateStatus('Opening file');
+    Processing := true;
 
-    XDebugFile := Xfile.Create(OpenDialog.FileName);
-    XDebugFile.OnProgress := self.UpdateProgress;
+    try
+      UpdateStatus('Opening file');
 
-    UpdateStatus('Processing file');
+      XDebugFile := Xfile.Create(OpenDialog.FileName);
+      XDebugFile.OnProgress := self.UpdateProgress;
 
-    XDebugFile.Parse;
+      UpdateStatus('Processing file');
 
-    if XDebugFile.Terminated then begin
-      CloseFileAction.Execute;
-      UpdateStatus('Processing terminated');
-    end else begin
-      UpdateStatus('Drawing tree');
-      TreeView.RootNodeCount := XDebugFile.Root^.ChildCount;
-      UpdateStatus('Ready');
+      XDebugFile.Parse;
+
+      if XDebugFile.Terminated then begin
+        CloseFileAction.Execute;
+        UpdateStatus('Processing terminated');
+      end else begin
+        UpdateStatus('Drawing tree');
+        TreeView.RootNodeCount := XDebugFile.Root^.ChildCount;
+        UpdateStatus('Ready');
+      end;
+    finally
+      ProgressBar.Position := 0;
+      Processing := false;
     end;
-    ProgressBar.Position := 0;
   end;
+end;
+
+procedure TForm1.PopupMenu1Popup(Sender: TObject);
+begin
+  CloseFile1.Enabled := Assigned(XDebugFile) and not Processing;
+  OpenFile1.Enabled := not Processing;
 end;
 
 procedure TForm1.StatusBarDrawPanel(StatusBar: TStatusBar; Panel: TStatusPanel;
