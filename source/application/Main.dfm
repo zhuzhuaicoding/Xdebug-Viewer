@@ -15,6 +15,7 @@ object Form1: TForm1
   OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
   object StatusBar: TStatusBar
@@ -67,6 +68,7 @@ object Form1: TForm1
     OnPaintText = TreeViewPaintText
     OnGetNodeDataSize = TreeViewGetNodeDataSize
     OnInitNode = TreeViewInitNode
+    OnKeyDown = FormKeyDown
     Columns = <
       item
         Position = 0

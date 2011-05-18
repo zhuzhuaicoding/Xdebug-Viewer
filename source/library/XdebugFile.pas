@@ -11,16 +11,19 @@ type
     private
       FProgressEvent: TXFileProgressEvent;
       FRoot: PXItem;
+      FTerminated: boolean;
       Stream: TFileStream;
       function ParseLine(const Line: string; ItemParent: PXItem): PXItem;
     public
       constructor Create(Filename: string);
       destructor Destroy(); override;
 
-      procedure parse();
+      procedure Parse();
+      procedure Terminate();
 
       property OnProgress: TXFileProgressEvent read FProgressEvent write FProgressEvent;
       property Root: PXItem read FRoot;
+      property Terminated: boolean read FTerminated;
   end;
 
 implementation
@@ -95,6 +98,8 @@ constructor XFile.Create(Filename: string);
 begin
   inherited Create;
 
+  FTerminated := false;
+
   if not FileExists(Filename) then
     raise Exception.Create(Format('File %s does not exist.', [filename]));
   try
@@ -128,7 +133,7 @@ begin
   Stream.Seek(0, soFromBeginning);
   TextStream := TTextStream.Create(Stream);
   try
-    while TextStream.ReadLn(Line) do begin
+    while TextStream.ReadLn(Line) and not FTerminated do begin
       if (Length(Line) > 0) and (Ord(Line[1]) in [48..57]) then
         Parent := parseLine(Line, Parent);
 
@@ -181,6 +186,11 @@ begin
     Result^ := TXItem.Create(Items, ItemParent, Stream);
     ItemParent.AddChild(Result);
   end;
+end;
+
+procedure XFile.Terminate;
+begin
+  FTerminated := true;
 end;
 
 end.

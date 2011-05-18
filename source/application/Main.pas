@@ -39,6 +39,7 @@ type
     procedure TreeViewGetNodeDataSize(Sender: TBaseVirtualTree;
       var NodeDataSize: Integer);
     procedure CloseFileActionExecute(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     XDebugFile: XFile;
 
@@ -101,6 +102,16 @@ begin
   SetWindowLong(ProgressBar.Handle, GWL_EXSTYLE, ProgressBarStyle);
 end;
 
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then begin
+    if Assigned(XDebugFile) then begin
+      XDebugFile.Terminate;
+    end;
+  end;
+end;
+
 procedure TForm1.OpenFileActionExecute(Sender: TObject);
 begin
   if OpenDialog.Execute then begin
@@ -118,12 +129,15 @@ begin
 
     XDebugFile.Parse;
 
-    UpdateStatus('Drawing tree');
+    if XDebugFile.Terminated then begin
+      CloseFileAction.Execute;
+      UpdateStatus('Processing terminated');
+    end else begin
+      UpdateStatus('Drawing tree');
+      TreeView.RootNodeCount := XDebugFile.Root^.ChildCount;
+      UpdateStatus('Ready');
+    end;
     ProgressBar.Position := 0;
-
-    TreeView.RootNodeCount := XDebugFile.Root^.ChildCount;
-
-    UpdateStatus('Ready');
   end;
 end;
 
