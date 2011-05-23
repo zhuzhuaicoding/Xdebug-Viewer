@@ -41,6 +41,8 @@ type
     procedure CloseFileActionExecute(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure PopupMenu1Popup(Sender: TObject);
+    procedure TreeViewInitChildren(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      var ChildCount: Cardinal);
   private
     XDebugFile: XFile;
     Processing: boolean;
@@ -215,11 +217,18 @@ begin
     end;
 end;
 
+procedure TForm1.TreeViewInitChildren(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; var ChildCount: Cardinal);
+var NodeData: PNodeData;
+begin
+  NodeData := Sender.GetNodeData(Node);
+  ChildCount := NodeData.Data^.ChildCount;
+end;
+
 procedure TForm1.TreeViewInitNode(Sender: TBaseVirtualTree; ParentNode,
   Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
 var PItem: PXItem;
     NodeData, ParentNodeData: PNodeData;
-    I: integer;
 begin
   with Sender do begin
     NodeData := GetNodeData(Node);
@@ -232,6 +241,7 @@ begin
   end else begin
     if XDebugFile.Root^.ChildCount > Node.Index then
       PItem := XDebugFile.Root^.Children[Node.Index];
+    InitialStates := InitialStates + [ivsExpanded];
   end;
 
   if not Assigned(PItem) then
@@ -239,11 +249,8 @@ begin
 
   NodeData.Data := PItem;
 
-  for I := 1 to NodeData.Data^.ChildCount do
-    Sender.AddChild(Node);
-
-  if not Assigned(ParentNodeData) then
-    Sender.Expanded[Node] := true;
+  if (NodeData.Data^.ChildCount > 0) then
+    InitialStates := InitialStates + [ivsHasChildren];
 end;
 
 procedure TForm1.TreeViewPaintText(Sender: TBaseVirtualTree;

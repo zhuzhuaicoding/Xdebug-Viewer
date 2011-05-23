@@ -67,6 +67,7 @@ object Form1: TForm1
     OnGetText = TreeViewGetText
     OnPaintText = TreeViewPaintText
     OnGetNodeDataSize = TreeViewGetNodeDataSize
+    OnInitChildren = TreeViewInitChildren
     OnInitNode = TreeViewInitNode
     OnKeyDown = FormKeyDown
     Columns = <
